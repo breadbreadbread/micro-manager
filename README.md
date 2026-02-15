@@ -43,6 +43,23 @@ For license information, please see [doc/copyright.txt](doc/copyright.txt).
 
 For build instructions, please see the [doc/how-to-build.md](doc/how-to-build.md).
 
+### Quick macOS Apple Silicon smoke test
+
+To sanity-check changes on Apple Silicon, you can install prerequisites with
+Homebrew and run a minimal build:
+
+```sh
+brew install git subversion autoconf automake libtool pkg-config ant boost swig@3 openjdk@11
+export JAVA_HOME=$(/usr/libexec/java_home -v 11 -F)
+export SWIG="$(brew --prefix swig@3)/bin/swig"
+./autogen.sh
+./configure
+make fetchdeps
+make -j
+```
+
+See [doc/how-to-build.md](doc/how-to-build.md) for the full install/run steps.
+
 Additional information is available on the Micro-Manager website at
 https://micro-manager.org
 
