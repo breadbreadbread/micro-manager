@@ -1,0 +1,27 @@
+diff --git a/mmCoreAndDevices/DeviceAdapters/Makefile.am b/mmCoreAndDevices/DeviceAdapters/Makefile.am
+index 1234567..89abcde 100644
+--- a/mmCoreAndDevices/DeviceAdapters/Makefile.am
++++ b/mmCoreAndDevices/DeviceAdapters/Makefile.am
+@@ -5,7 +5,7 @@
+ # Order matters: The adapters listed earlier are loaded first by the DeviceManager
+ # (This list is processed by configure.ac, which adds them to build configuration)
+ SUBDIRS = DemoCamera \
+-        BlueboxOptics_niji \
++        # BlueboxOptics_niji DISABLED: Boost lexical_cast issue on macOS ARM64 \
+         $(DEMO_ADAPTERS) \
+         $(PLUGIN_ADAPTERS) \
+         $(PROP_ADAPTERS)
+
+diff --git a/mmCoreAndDevices/DeviceAdapters/configure.ac b/mmCoreAndDevices/DeviceAdapters/configure.ac
+index 1234567..89abcde 100644
+--- a/mmCoreAndDevices/DeviceAdapters/configure.ac
++++ b/mmCoreAndDevices/DeviceAdapters/configure.ac
+@@ -142,7 +142,8 @@ if test "x$build_plugins" = xyes; then
+   m4_define([PCO_UCT], [deviceadapter/PCO_UCT/Makefile.am])
+   m4_define([PCO_SC2], [deviceadapter/PCO_SC2/Makefile.am])
+   m4_define([PCO_USB], [deviceadapter/PCO_USB/Makefile.am])
+-  m4_define([BlueboxOptics_niji], [deviceadapter/BlueboxOptics_niji/Makefile.am])
++  # m4_define([BlueboxOptics_niji], [deviceadapter/BlueboxOptics_niji/Makefile.am]) DISABLED: Boost lexical_cast issue on macOS ARM64
+   m4_define([LeicaDMi8], [deviceadapter/LeicaDMi8/Makefile.am])
+   m4_define([Lumenera], [deviceadapter/Lumenera/Makefile.am])
+   m4_define([ASI], [deviceadapter/ASI/Makefile.am])
