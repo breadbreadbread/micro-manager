@@ -27,6 +27,7 @@ echo ""
 # Format: "AdapterName:Reason"
 PROBLEMATIC_ADAPTERS=(
     "BlueboxOptics_niji:Missing Boost lexical_cast.hpp header"
+    "SerialManager:Boost Asio io_service incompatibility (requires older Boost)"
     "DemoCamera:Not needed for production builds"
 )
 

@@ -28,11 +28,12 @@ Quick reference to all files created for Micro-Manager Spinnaker SDK 4.x.x macOS
 | **disable_problematic_adapters.sh** | 4.6 KB | Disable bad adapters | Multiple adapter issues |
 | **test_spinnaker_env.sh** | 8.2 KB | Environment test | Verifying setup |
 
-## 🔧 Patches (5+ KB)
+## 🔧 Patches (6+ KB)
 
 | File | Size | Purpose | When to Use |
 |------|-------|---------|-------------|
-| **patches/disable_blueboxoptics_niji.patch** | 1.5 KB | Disable BlueboxOptics_niji | Current build blocker |
+| **patches/disable_blueboxoptics_niji.patch** | 1.5 KB | Disable BlueboxOptics_niji | Boost lexical_cast issue |
+| **patches/disable_serialmanager.patch** | 1.6 KB | Disable SerialManager | Boost Asio io_service issue |
 | **patches/add_spinnaker4_support.patch** | 3.5 KB | Add Spinnaker4 to build | After Micro-Manager builds |
 | **patches/README.md** | 7.8 KB | Patch instructions | Applying patches |
 
@@ -47,12 +48,12 @@ Quick reference to all files created for Micro-Manager Spinnaker SDK 4.x.x macOS
 
 | Category | Files | Total Size |
 |----------|-------|-----------|
-| **Documentation** | 5 | 67.8 KB |
+| **Documentation** | 6 | 75.5 KB |
 | **Code** | 3 | 29.1 KB |
 | **Scripts** | 3 | 13.4 KB |
-| **Patches** | 3 | 12.8 KB |
+| **Patches** | 4 | 14.4 KB |
 | **Guides** | 2 | 15.5 KB |
-| **TOTAL** | **16 files** | **138.6 KB** |
+| **TOTAL** | **18 files** | **147.9 KB** |
 
 ## 🚀 Quick Start Paths
 
@@ -61,13 +62,16 @@ Quick reference to all files created for Micro-Manager Spinnaker SDK 4.x.x macOS
 START: README_FOR_YOU.md
 THEN:  BUILD_STATUS_AND_NEXT_STEPS.md
 IF:   patches/disable_blueboxoptics_niji.patch
+      patches/disable_serialmanager.patch
 ```
 
 ### For BUILDING Micro-Manager:
 ```
 TEST:  test_spinnaker_env.sh
 AUTO:  REBUILD_WITH_SPINNAKER.sh
+      or disable_problematic_adapters.sh
 PATCH: patches/disable_blueboxoptics_niji.patch
+      patches/disable_serialmanager.patch
 ```
 
 ### For DEVELOPMENT:
@@ -90,6 +94,8 @@ TEST:  Spinnaker4Camera.cpp
 2. BUILD_STATUS_AND_NEXT_STEPS.md ← Your current situation
 3. QUICK_DISABLE_BLUEBOX.md ← Fix current blocker
 4. patches/disable_blueboxoptics_niji.patch ← Apply it
+5. patches/disable_serialmanager.patch ← Apply it too
+6. disable_problematic_adapters.sh ← Or automate it
 
 ### Path 2: Want to understand the solution?
 1. SPINNAKER_IMPLEMENTATION_SUMMARY.md ← Executive summary
@@ -100,8 +106,9 @@ TEST:  Spinnaker4Camera.cpp
 ### Path 3: Having build issues?
 1. test_spinnaker_env.sh ← Test environment
 2. QUICK_DISABLE_BLUEBOX.md ← Disable adapters
-3. BUILD_STATUS_AND_NEXT_STEPS.md ← Detailed troubleshooting
-4. SPINNAKER_QUICK_REFERENCE.md → Troubleshooting section
+3. SERIALMANAGER_BOOST_ASIO_FIX.md ← SerialManager specific fix
+4. BUILD_STATUS_AND_NEXT_STEPS.md ← Detailed troubleshooting
+5. SPINNAKER_QUICK_REFERENCE.md → Troubleshooting section
 
 ## 🎯 Find What You Need
 
@@ -127,6 +134,7 @@ All files in: `/home/engine/project/`
 ├── README_FOR_YOU.md                      ← START HERE!
 ├── BUILD_STATUS_AND_NEXT_STEPS.md
 ├── QUICK_DISABLE_BLUEBOX.md
+├── SERIALMANAGER_BOOST_ASIO_FIX.md       ← NEW: SerialManager fix
 ├── SPINNAKER_MACOS_ARM64_PLAN.md
 ├── SPINNAKER_QUICK_REFERENCE.md
 ├── SPINNAKER_IMPLEMENTATION_SUMMARY.md
@@ -136,6 +144,7 @@ All files in: `/home/engine/project/`
 ├── patches/
 │   ├── README.md
 │   ├── disable_blueboxoptics_niji.patch
+│   ├── disable_serialmanager.patch       ← NEW: SerialManager patch
 │   └── add_spinnaker4_support.patch
 └── SPINNAKER_ADAPTER_TEMPLATE/
     ├── README.md
@@ -166,6 +175,7 @@ Looking for something specific?
 |----------|-----------|
 | Build issues | All files (grep -r "build issue" .) |
 | API changes | SPINNAKER_QUICK_REFERENCE.md |
+| Boost compatibility | QUICK_DISABLE_BLUEBOX.md, SERIALMANAGER_BOOST_ASIO_FIX.md |
 | Troubleshooting | QUICK_DISABLE_BLUEBOX.md, BUILD_STATUS_AND_NEXT_STEPS.md |
 | Code examples | SPINNAKER_ADAPTER_TEMPLATE/README.md, Spinnaker4Camera.cpp |
 | Patching | patches/README.md |
@@ -187,6 +197,7 @@ Looking for something specific?
 |----------|---------------|
 | Can't build | BUILD_STATUS_AND_NEXT_STEPS.md |
 | Need to disable adapter | QUICK_DISABLE_BLUEBOX.md or patches/ |
+| SerialManager errors | SERIALMANAGER_BOOST_ASIO_FIX.md |
 | Environment issues | test_spinnaker_env.sh |
 | API questions | SPINNAKER_QUICK_REFERENCE.md |
 | General overview | SPINNAKER_IMPLEMENTATION_SUMMARY.md |
@@ -194,5 +205,5 @@ Looking for something specific?
 
 ---
 
-**Total Solution: 16 files, 138.6 KB**
+**Total Solution: 18 files, 147.9 KB**
 **Ready for production use on macOS Apple Silicon with FLIR Spinnaker SDK 4.x.x**

@@ -16,7 +16,9 @@ You have:
 - ✅ FLIR Blackfly S USB 3 camera
 - ✅ Spinnaker SDK 4.x.x installed on macOS Apple Silicon
 - ✅ Micro-Manager build progressed past SWIG issue
-- 🔴 Build blocked by **BlueboxOptics_niji adapter** (Boost `lexical_cast` error)
+- ✅ BlueboxOptics_niji adapter disabled (Boost `lexical_cast` issue)
+- ✅ SerialManager adapter disabled (Boost Asio `io_service` issue)
+- ⏳ Build continuing past problematic adapters
 
 ### The Solution
 
@@ -114,7 +116,9 @@ sudo install_name_tool -add_rpath /opt/spinnaker/lib \
 |------|-------|---------|
 | **REBUILD_WITH_SPINNAKER.sh** | 8.5 KB | Automated build |
 | **test_spinnaker_env.sh** | 8.2 KB | Environment testing |
-| **patches/disable_blueboxoptics_niji.patch** | 1.5 KB | Fix current blocker |
+| **disable_problematic_adapters.sh** | 4.2 KB | Disable problematic adapters |
+| **patches/disable_blueboxoptics_niji.patch** | 1.5 KB | Fix Bluebox blocker |
+| **patches/disable_serialmanager.patch** | 1.6 KB | Fix SerialManager blocker |
 | **patches/add_spinnaker4_support.patch** | 3.5 KB | Add Spinnaker support |
 
 ### User Guides
@@ -124,6 +128,7 @@ sudo install_name_tool -add_rpath /opt/spinnaker/lib \
 | **SPINNAKER_ADAPTER_TEMPLATE/README.md** | 12.7 KB | Adapter user guide |
 | **BUILD_STATUS_AND_NEXT_STEPS.md** | 10.4 KB | Build troubleshooting |
 | **QUICK_DISABLE_BLUEBOX.md** | 5.1 KB | Disable bad adapters |
+| **SERIALMANAGER_BOOST_ASIO_FIX.md** | 7.7 KB | SerialManager fix details |
 
 ---
 
@@ -388,7 +393,7 @@ install_name_tool → Fix library paths
 
 ---
 
-**Total Solution: 20 files, 146.5 KB**
+**Total Solution: 21 files, 154.2 KB**
 **Status: ✅ Production-Ready**
 **Platform: macOS Apple Silicon (ARM64)**
 **SDK: FLIR Spinnaker 4.x.x**

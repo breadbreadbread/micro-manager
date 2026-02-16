@@ -1,16 +1,24 @@
-# Quick Fix: Disable BlueboxOptics_niji Adapter
+# Quick Fix: Disable Problematic Adapters
 
 ## Problem
-The BlueboxOptics_niji adapter is failing to compile with:
+
+Some adapters are failing to compile due to Boost library incompatibilities:
+
+### BlueboxOptics_niji
 ```
 lexical_cast.hpp' file not found
 ```
+Cause: Newer Boost versions (1.66+) removed the `lexical_cast` header.
 
-This is because newer Boost versions (1.66+) removed the `lexical_cast` header.
+### SerialManager
+```
+no type named 'io_service' in namespace 'boost::asio'
+```
+Cause: Boost Asio API changed in newer versions (`io_service` replaced by `io_context`).
 
 ## Solution
 
-Disable the BlueboxOptics_niji adapter to allow the build to proceed.
+Disable these problematic adapters to allow the build to proceed.
 
 ### Method 1: Quick Edit (Recommended)
 
@@ -19,22 +27,24 @@ Navigate to your build directory and run these commands:
 ```bash
 cd /tmp/micro-manager-1-nospace-1771252231
 
-# 1. Remove BlueboxOptics_niji from DeviceAdapters SUBDIRS
+# 1. Remove problematic adapters from DeviceAdapters SUBDIRS
 cd mmCoreAndDevices/DeviceAdapters
 
-# Edit Makefile.am to comment out BlueboxOptics_niji
+# Edit Makefile.am to comment out problematic adapters
 sed -i.bak 's/BlueboxOptics_niji/# BlueboxOptics_niji # DISABLED/' Makefile.am
+sed -i.bak 's/SerialManager/# SerialManager # DISABLED/' Makefile.am
 
-# Verify it's commented out
-grep BlueboxOptics_niji Makefile.am
+# Verify they're commented out
+grep -E "BlueboxOptics_niji|SerialManager" Makefile.am
 
 # 2. Disable in configure.ac
 cd ..
-# Comment out the m4_define for BlueboxOptics_niji
+# Comment out the m4_defines for problematic adapters
 sed -i.bak '/m4_define(\[BlueboxOptics_niji\]/s/^/# DISABLED /' configure.ac
+sed -i.bak '/m4_define(\[SerialManager\]/s/^/# DISABLED /' configure.ac
 
-# Verify it's commented out
-grep -A2 -B2 BlueboxOptics_niji configure.ac
+# Verify they're commented out
+grep -A2 -B2 -E "BlueboxOptics_niji|SerialManager" configure.ac
 
 # 3. Re-run autogen to regenerate configure scripts
 cd ../..
@@ -63,31 +73,37 @@ If the sed commands don't work, edit the files manually:
 Find the SUBDIRS line (around line 5-10):
 ```makefile
 # BEFORE:
-SUBDIRS = DemoCamera BlueboxOptics_niji ...
+SUBDIRS = DemoCamera BlueboxOptics_niji SerialManager ...
 
 # AFTER:
-SUBDIRS = DemoCamera # BlueboxOptics_niji DISABLED ...
+SUBDIRS = DemoCamera \
+    # BlueboxOptics_niji DISABLED: Boost lexical_cast issue \
+    # SerialManager DISABLED: Boost Asio io_service issue \
+    ...
 ```
 
 **File 2: `mmCoreAndDevices/DeviceAdapters/configure.ac`**
 
-Find the m4_define for BlueboxOptics_niji (search for it):
+Find the m4_defines for the problematic adapters (search for them):
 ```m4
 # BEFORE:
 m4_define([BlueboxOptics_niji], [deviceadapter/BlueboxOptics_niji/Makefile.am])
+m4_define([SerialManager], [deviceadapter/SerialManager/Makefile.am])
 
 # AFTER:
 # DISABLED: BlueboxOptics_niji - requires old Boost with lexical_cast
 # m4_define([BlueboxOptics_niji], [deviceadapter/BlueboxOptics_niji/Makefile.am])
+# DISABLED: SerialManager - Boost Asio API incompatibility
+# m4_define([SerialManager], [deviceadapter/SerialManager/Makefile.am])
 ```
 
-### Method 3: Delete the adapter directory
+### Method 3: Delete the adapter directories
 
-If you don't need BlueboxOptics_niji at all:
+If you don't need these adapters at all:
 
 ```bash
 cd /tmp/micro-manager-1-nospace-1771252231/mmCoreAndDevices/DeviceAdapters
-rm -rf BlueboxOptics_niji
+rm -rf BlueboxOptics_niji SerialManager
 
 # Then proceed with steps 3-5 from Method 1
 ```
@@ -105,10 +121,11 @@ Apply the same fix (comment out in Makefile.am and configure.ac).
 
 ### Common adapters that might have issues:
 
-1. **BlueboxOptics_niji** - Already fixing
-2. **DemoCamera** - Usually works, can keep
-3. **USB3Vision** - Might have Boost issues
-4. **PCO** - Older adapter, might have issues
+1. **BlueboxOptics_niji** - Already fixing (lexical_cast)
+2. **SerialManager** - Already fixing (Boost Asio io_service)
+3. **DemoCamera** - Usually works, can keep
+4. **USB3Vision** - Might have Boost issues
+5. **PCO** - Older adapter, might have issues
 
 ### Alternative: Disable all non-essential adapters
 
@@ -150,15 +167,15 @@ sudo make install
 
 ## Verification
 
-To verify the adapter is disabled:
+To verify the adapters are disabled:
 
 ```bash
-# Check if BlueboxOptics_niji appears in configure output
-./configure --help 2>&1 | grep -i bluebox
-# Should show nothing or a DISABLED marker
+# Check if BlueboxOptics_niji or SerialManager appear in configure output
+./configure --help 2>&1 | grep -E -i "bluebox|serial"
+# Should show nothing or DISABLED markers
 
 # Check Makefile
-cat mmCoreAndDevices/DeviceAdapters/Makefile.am | grep -i bluebox
+cat mmCoreAndDevices/DeviceAdapters/Makefile.am | grep -E -i "bluebox|serial"
 # Should be commented out or missing
 ```
 
@@ -176,7 +193,7 @@ chmod +x autogen.sh
 
 autogen.sh should generate configure. If it fails, check output for errors.
 
-### Error: "make continues to try building BlueboxOptics_niji"
+### Error: "make continues to try building BlueboxOptics_niji or SerialManager"
 
 You might need to clean build artifacts first:
 ```bash

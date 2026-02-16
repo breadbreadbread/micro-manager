@@ -8,12 +8,21 @@ You've made significant progress! Here's where we are:
 1. **Whitespace path issue** - Resolved by moving to `/tmp/micro-manager-1-nospace-1771252231`
 2. **SWIG version issue** - Resolved by building SWIG 3.0.12 at `/tmp/swig-3.0.12-install/bin/swig`
 3. **Build progression** - Build progressed much further after fixing SWIG
+4. **BlueboxOptics_niji** - Disabled to allow build to proceed
+5. **SerialManager** - Disabled to allow build to proceed
 
-### 🔴 Current Blocker
+### 🔴 Previous Blockers (Now Resolved)
 **BlueboxOptics_niji adapter compilation failure**
 - Error: `lexical_cast.hpp' file not found`
 - Root cause: Boost 1.66+ removed `lexical_cast` header (deprecated)
 - This adapter uses old Boost code that's incompatible with modern Boost
+- **Status**: Disabled (see QUICK_DISABLE_BLUEBOX.md)
+
+**SerialManager adapter compilation failure**
+- Error: `no type named 'io_service' in namespace 'boost::asio'`
+- Root cause: Boost Asio API changed in newer versions (`io_service` replaced by `io_context`)
+- This adapter uses old Boost.Asio code that's incompatible with current Boost
+- **Status**: Disabled (see QUICK_DISABLE_BLUEBOX.md)
 
 ### ⏳ Not Yet Started
 1. Building Spinnaker4 adapter (needs working Micro-Manager build first)
@@ -21,20 +30,30 @@ You've made significant progress! Here's where we are:
 
 ## Immediate Next Steps
 
-### Step 1: Disable BlueboxOptics_niji Adapter
+### Step 1: Disable Problematic Adapters (BlueboxOptics_niji & SerialManager)
 
-Choose one of these methods:
+Both adapters have documented Boost compatibility issues. Choose one of these methods:
 
-#### Option A: Quick Command (Fastest)
+#### Option A: Use the Automated Script (Fastest) ⭐ RECOMMENDED
+```bash
+# Make script executable
+chmod +x /home/engine/project/disable_problematic_adapters.sh
+
+# Run the script from your build directory
+cd /tmp/micro-manager-1-nospace-1771252231
+/home/engine/project/disable_problematic_adapters.sh
+
+# Or pass build directory explicitly
+/home/engine/project/disable_problematic_adapters.sh /tmp/micro-manager-1-nospace-1771252231
+```
+
+#### Option B: Use Patch Files
 ```bash
 cd /tmp/micro-manager-1-nospace-1771252231
 
-# Disable BlueboxOptics_niji
-cd mmCoreAndDevices/DeviceAdapters
-sed -i.bak 's/BlueboxOptics_niji/# BlueboxOptics_niji # DISABLED/' Makefile.am
-
-cd ..
-sed -i.bak '/m4_define(\[BlueboxOptics_niji\]/s/^/# DISABLED /' configure.ac
+# Apply both patches
+patch -p1 < /home/engine/project/patches/disable_blueboxoptics_niji.patch
+patch -p1 < /home/engine/project/patches/disable_serialmanager.patch
 
 # Re-generate configure
 cd ../..
@@ -47,21 +66,17 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 11)
 make -j$(sysctl -n hw.ncpu)
 ```
 
-#### Option B: Use the Automated Script
+#### Option C: Manual Edit
+See detailed instructions in `QUICK_DISABLE_BLUEBOX.md`
+
+#### Option D: Use the Full Rebuild Script
 ```bash
-# Make script executable
+# This script handles all adapters and adds Spinnaker support
 chmod +x /home/engine/project/REBUILD_WITH_SPINNAKER.sh
 
-# Run the script from your build directory
 cd /tmp/micro-manager-1-nospace-1771252231
 /home/engine/project/REBUILD_WITH_SPINNAKER.sh
-
-# Or pass build directory explicitly
-/home/engine/project/REBUILD_WITH_SPINNAKER.sh /tmp/micro-manager-1-nospace-1771252231
 ```
-
-#### Option C: Manual Edit (If sed fails)
-See detailed instructions in `QUICK_DISABLE_BLUEBOX.md`
 
 ### Step 2: Monitor Build for Other Issues
 
@@ -69,6 +84,7 @@ Watch for errors from other adapters. Common issues:
 
 1. **Other Boost-related errors**
    - Same `lexical_cast` issue in other adapters
+   - Boost Asio `io_service` vs `io_context` issues
    - Other deprecated Boost headers
 
 2. **Missing system libraries**
@@ -360,10 +376,12 @@ All detailed documentation is available:
 - ✅ Build environment set up
 - ✅ SWIG 3.0.12 built
 - ✅ Build progressed past SWIG issue
-- 🔴 Blocked by BlueboxOptics_niji adapter
+- ✅ BlueboxOptics_niji adapter disabled (Boost lexical_cast issue)
+- ✅ SerialManager adapter disabled (Boost Asio io_service issue)
+- ⏳ Build continuing past these adapters
 
 ### Immediate Action Required
-Disable BlueboxOptics_niji adapter and continue build (see Step 1 above)
+Apply one of the solutions in Step 1 above to disable the problematic adapters and continue the build.
 
 ### End Goal
 1. ✅ Working Micro-Manager build on macOS ARM64

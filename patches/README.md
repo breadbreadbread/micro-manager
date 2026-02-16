@@ -4,7 +4,7 @@
 
 This directory contains patch files to modify Micro-Manager's build system to:
 
-1. Disable problematic adapters (like BlueboxOptics_niji)
+1. Disable problematic adapters (like BlueboxOptics_niji and SerialManager)
 2. Add Spinnaker4 adapter support with SDK detection
 
 ## Applying Patches
@@ -41,6 +41,26 @@ git status
 - `mmCoreAndDevices/DeviceAdapters/Makefile.am` - BlueboxOptics_niji commented out
 - `mmCoreAndDevices/DeviceAdapters/configure.ac` - m4_define for BlueboxOptics_niji commented out
 
+### Patch 1b: Disable SerialManager
+
+This patch disables the SerialManager adapter which fails to compile on modern macOS due to Boost Asio API changes (`io_service` replaced by `io_context` in newer Boost versions).
+
+**Apply:**
+```bash
+# Navigate to project root
+cd /tmp/micro-manager-1-nospace-1771252231
+
+# Apply the patch
+patch -p1 < /home/engine/project/patches/disable_serialmanager.patch
+
+# Verify patch was applied
+git status
+```
+
+**Expected changes:**
+- `mmCoreAndDevices/DeviceAdapters/Makefile.am` - SerialManager commented out
+- `mmCoreAndDevices/DeviceAdapters/configure.ac` - m4_define for SerialManager commented out
+
 ### Patch 2: Add Spinnaker4 Support
 
 This patch adds complete Spinnaker SDK 4.x.x support to Micro-Manager's build system.
@@ -71,9 +91,9 @@ git status
 5. Creates conditional build for Spinnaker4 adapter
 6. Adds SDK installation path checking
 
-### Applying Both Patches
+### Applying All Patches
 
-To apply both patches at once:
+To apply all patches at once:
 
 ```bash
 cd /tmp/micro-manager-1-nospace-1771252231
@@ -83,8 +103,9 @@ mkdir -p mmCoreAndDevices/DeviceAdapters/Spinnaker4
 cp -r /home/engine/project/SPINNAKER_ADAPTER_TEMPLATE/* \
       mmCoreAndDevices/DeviceAdapters/Spinnaker4/
 
-# Apply both patches
+# Apply all patches (disable problematic adapters first, then add Spinnaker support)
 patch -p1 < /home/engine/project/patches/disable_blueboxoptics_niji.patch
+patch -p1 < /home/engine/project/patches/disable_serialmanager.patch
 patch -p1 < /home/engine/project/patches/add_spinnaker4_support.patch
 
 # Verify
@@ -160,6 +181,15 @@ grep "BlueboxOptics_niji" mmCoreAndDevices/DeviceAdapters/Makefile.am
 # Should show commented out line
 
 grep "BlueboxOptics_niji" mmCoreAndDevices/DeviceAdapters/configure.ac
+# Should show commented out m4_define
+```
+
+```bash
+# Check SerialManager is disabled
+grep "SerialManager" mmCoreAndDevices/DeviceAdapters/Makefile.am
+# Should show commented out line
+
+grep "SerialManager" mmCoreAndDevices/DeviceAdapters/configure.ac
 # Should show commented out m4_define
 ```
 
