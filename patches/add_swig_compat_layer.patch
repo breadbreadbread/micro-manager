@@ -1,0 +1,98 @@
+diff --git a/configure.ac b/configure.ac
+index 1234567..89abcde 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -30,15 +30,15 @@
+ # Testing (googletest, googlemock)
+ # See testing/setuptesting.sh
+ MM_GMOCK([$srcdir]/testing/googletest], [$(top_srcdir)/testing/googletest])
+ AM_CONDITIONAL([BUILD_CPP_TESTS], [test "x$have_gmock" = xyes])
++##
++## SWIG Compatibility Layer for macOS ARM64
++##
++
++# Check for SWIG compiler - some components require SWIG 3.x
++if test -z "$SWIG"; then
++   AC_CHECK_PROGS([SWIG], [swig])
++else
++   AC_CHECK_PROGS([swig], [swig])
++   if test -x "$swig" = xyes; then
++      SWIG=$swig
++      # Check SWIG version
++      SWIG_VERSION=$($swig -version 2>&1 | head -n 1 | cut -d. -f 1)
++      SWIG_MAJOR=$(echo $SWIG_VERSION | cut -d. -f 1)
++      AC_MSG_RESULT([SWIG $SWIG_VERSION])
++   else
++      AC_MSG_WARN([SWIG 3.x not found, some components may not build])
++      SWIG=""
++   fi
++
++   # Set SWIG_MAJOR for use in makefiles
++   if test -n "$SWIG_MAJOR" = "3"; then
++      SWIG_MAJOR=3
++   elif test -n "$SWIG_MAJOR" = "4"; then
++      SWIG_MAJOR=4
++   else
++      AC_MSG_ERROR([SWIG version $SWIG_MAJOR is not supported, requires 3.x or 4.x])
++      SWIG_MAJOR=""
++   fi
++
++   # Check if SWIG version is acceptable for current build
++   if test "$SWIG_MAJOR" = "3"; then
++      AC_MSG_NOTICE([SWIG 3.x detected - enabling SWIG 3.x compatibility layer])
++   elif test "$SWIG_MAJOR" = "4"; then
++      AC_MSG_NOTICE([SWIG 4.x detected - SWIG 3.x code may need updates])
++      # Note: SWIG 4.x interface changed, but build should still work
++   fi
++
++   # Store for use in makefiles
++   AC_SUBST([SWIG], [$SWIG])
++   AC_SUBST([SWIG_MAJOR])
++
++   # Define SWIG compatibility flags
++   if test "$SWIG_MAJOR" = "3"; then
++      AC_DEFINE([SWIG_3_COMPAT], [1], [SWIG 3.x compatibility])
++   else
++      AC_DEFINE([SWIG_3_COMPAT], [0])
++   AC_DEFINE([SWIG_4_COMPAT], [1], [SWIG 4.x compatibility])
++   AC_DEFINE([SWIG_3_OR_4], [1], [SWIG 3.x or 4.x])
++   AC_DEFINE([SWIG_VERSION], ["$SWIG_MAJOR"])
++fi
++
++MM_SWIG_COMPAT_MSG([Enabling SWIG compatibility layer for macOS ARM64])
++
+ ##
+diff --git a/mmCoreAndDevices/MMCore/Makefile.am b/mmCoreAndDevices/MMCore/Makefile.am
+index 1234567..89abcde 100644
+--- a/mmCoreAndDevices/MMCore/Makefile.am
++++ b/mmCoreAndDevices/MMCore/Makefile.am
+@@ -70,7 +70,7 @@
+ # SWIG Python bindings (Java interface for MMCore)
+ # 
+-if HAVE_JAVA
+ 
++if HAVE_JAVA
++if HAVE_JAVA
+ ifneq (,$(SWIG),,$(SWIG_MAJOR)$(SWIG_VERSION))
+ then
+    # SWIG 3.x or 4.x is required
+    if test -z "$SWIG_3_OR_4"; then
+        AC_MSG_ERROR([SWIG 3.x or 4.x is required but SWIG is empty])
+    fi
++   if test "$SWIG_MAJOR" = "3"; then
+        # For SWIG 3.x, use SWIG 3.x compatibility mode
+        MMCoreJ_SwigArgs = -noproxy -c++ -module MMCoreJ -package com.micromanager.MMCoreJ -threads
+    elif test "$SWIG_MAJOR" = "4"; then
+        # For SWIG 4.x, SWIG 3.x code should work with some adjustments
+        MMCoreJ_SwigArgs = -noproxy -c++ -module MMCoreJ -package com.micromanager.MMCoreJ
+    else
+        AC_MSG_ERROR([SWIG version $SWIG_MAJOR is not supported])
+    fi
++
++   # Add version-specific defines for makefile
++   if test "$SWIG_MAJOR" = "3"; then
++        MMCoreJ_CPPFLAGS += -DSWIG_3_COMPAT
++   elif test "$SWIG_MAJOR" = "4"; then
++        MMCoreJ_CPPFLAGS += -DSWIG_4_COMPAT
++   fi
+ endif
