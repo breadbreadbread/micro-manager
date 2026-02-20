@@ -40,7 +40,7 @@ public class AffineUtils {
     * @return Returns the No op affine transform as a DoubleVector (for consumption by the core).
     */
    public static DoubleVector noTransform() {
-      DoubleVector affineTransform = new DoubleVector(6);
+      DoubleVector affineTransform = new DoubleVector(6, 0.0);
       for (int i = 1; i < 6; i++) {
          affineTransform.set(i, 0.0);
       }
@@ -73,7 +73,7 @@ public class AffineUtils {
     * @return Corresponding Affine Transform as a DoubleVector
     */
    public static DoubleVector affineToDouble(AffineTransform atf) {
-      DoubleVector out = new DoubleVector(6);
+      DoubleVector out = new DoubleVector(6, 0.0);
       out.set(0, atf.getScaleX());
       out.set(1, atf.getShearX());
       out.set(2, atf.getTranslateX());
